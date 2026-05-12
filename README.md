@@ -1,92 +1,49 @@
-# CandidateHub - Candidate Management Dashboard
+# Candidate Management Dashboard
 
-A modern, responsive Candidate Management Dashboard built with **React.js**, **Vite**, and **Tailwind CSS v4**.
+A simple React dashboard to manage job applicants. Built as part of an internship assignment.
 
 ## Features
 
-- **Applicant Listing** — View applicants in a responsive card grid with name, email, college, skills, and status
-- **Search & Filter** — Search by name, filter by application status
-- **Applicant Detail View** — Click any card to open a modal with full applicant details
-- **Add Applicant Form** — Add new applicants with full form validation and error handling
-- **API Integration** — Fetches real user data from [DummyJSON API](https://dummyjson.com/)
-- **Dark Mode** — Toggle between light and dark themes (persisted in localStorage)
-- **Pagination** — Navigate through pages of applicants
-- **Loading States** — Skeleton loading UI for smooth data fetching experience
-- **Responsive Design** — Fully responsive from mobile to desktop
+- View applicants in a card layout
+- Search applicants by name
+- Filter by application status
+- View applicant details in a modal
+- Add new applicants with form validation
+- Dark mode toggle
+- Responsive design
 
 ## Tech Stack
 
-| Technology    | Purpose              |
-|---------------|----------------------|
-| React 19      | UI Framework         |
-| Vite          | Build Tool           |
-| Tailwind CSS 4| Styling              |
-| Lucide React  | Icons                |
-| DummyJSON API | Mock Data Source     |
+- React.js (Vite)
+- Tailwind CSS
+- Lucide React (icons)
+- DummyJSON API (mock data)
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ installed
-- npm or yarn
-
-### Installation
+## Setup
 
 ```bash
-# Clone or navigate to the project
-cd upteky
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+App runs at `http://localhost:5173`
 
-### Build for Production
-
-```bash
-npm run build
-npm run preview
-```
-
-## Project Structure
+## Folder Structure
 
 ```
 src/
 ├── components/
-│   ├── AddApplicantForm.jsx   # New applicant form with validation
-│   ├── ApplicantCard.jsx      # Individual applicant card
-│   ├── ApplicantModal.jsx     # Detail view modal
-│   ├── Header.jsx             # Top navigation bar
-│   ├── LoadingSkeleton.jsx    # Loading placeholder UI
-│   ├── Pagination.jsx         # Page navigation
-│   ├── SearchFilter.jsx       # Search & status filter controls
-│   ├── StatsBar.jsx           # Dashboard statistics
-│   └── StatusBadge.jsx        # Reusable status badge
-├── hooks/
-│   └── useHooks.js            # Custom hooks (useFetch, useDarkMode, useDebounce)
-├── services/
-│   └── api.js                 # API service & data transformation
-├── App.jsx                    # Main application component
-├── index.css                  # Tailwind CSS entry
-└── main.jsx                   # React entry point
+│   ├── AddApplicantForm.jsx
+│   ├── ApplicantCard.jsx
+│   ├── ApplicantModal.jsx
+│   ├── Header.jsx
+│   └── SearchFilter.jsx
+├── api.js
+├── App.jsx
+├── index.css
+└── main.jsx
 ```
 
 ## API
 
-Data is fetched from the [DummyJSON Users API](https://dummyjson.com/users) and transformed into applicant format with randomized skills, colleges, and application statuses.
-
-## Application Status Types
-
-| Status     | Color   |
-|------------|---------|
-| Applied    | Blue    |
-| Screening  | Yellow  |
-| Interview  | Purple  |
-| Offered    | Emerald |
-| Hired      | Green   |
-| Rejected   | Red     |
+Uses [DummyJSON Users API](https://dummyjson.com/users) to fetch sample user data which is mapped to applicant format.

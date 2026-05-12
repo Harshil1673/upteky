@@ -1,119 +1,82 @@
-import { useState, useMemo } from 'react';
-import Header from './components/Header';
-import SearchFilter from './components/SearchFilter';
-import StatsBar from './components/StatsBar';
-import ApplicantCard from './components/ApplicantCard';
-import ApplicantModal from './components/ApplicantModal';
-import AddApplicantForm from './components/AddApplicantForm';
-import Pagination from './components/Pagination';
-import LoadingSkeleton from './components/LoadingSkeleton';
-import { useDarkMode, useFetch, useDebounce } from './hooks/useHooks';
-import { fetchApplicants } from './services/api';
-import { AlertTriangle, UserX } from 'lucide-react';
+import { useState, useEffect } from "react";
+import Header from "./components/Header";
+import SearchFilter from "./components/SearchFilter";
+import ApplicantCard from "./components/ApplicantCard";
+import ApplicantModal from "./components/ApplicantModal";
+import AddApplicantForm from "./components/AddApplicantForm";
+import { fetchApplicants } from "./api";
 
 export default function App() {
-  const { dark, toggle: toggleDark } = useDarkMode();
+  // Dark mode
+  const [dark, setDark] = useState(false);
 
-  // State
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  // Applicant data
+  const [applicants, setApplicants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Search and filter
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  // Modals
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [localApplicants, setLocalApplicants] = useState([]);
 
-  const debouncedSearch = useDebounce(search);
+  // Toggle dark class on html element
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
-  // Fetch data
-  const { data, loading, error, refetch } = useFetch(
-    () => fetchApplicants(page, 12),
-    [page]
-  );
+  // Fetch applicants on mount
+  useEffect(() => {
+    fetchApplicants()
+      .then((data) => setApplicants(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  // Combine API + locally added applicants
-  const allApplicants = useMemo(() => {
-    const apiApplicants = data?.applicants || [];
-    return [...localApplicants, ...apiApplicants];
-  }, [data, localApplicants]);
+  // Filter applicants based on search and status
+  const filtered = applicants.filter((a) => {
+    const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = !statusFilter || a.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
-  // Filter
-  const filtered = useMemo(() => {
-    return allApplicants.filter((a) => {
-      const matchesSearch =
-        !debouncedSearch ||
-        a.name.toLowerCase().includes(debouncedSearch.toLowerCase());
-      const matchesStatus = !statusFilter || a.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [allApplicants, debouncedSearch, statusFilter]);
-
-  const handleAddApplicant = (newApplicant) => {
-    setLocalApplicants((prev) => [newApplicant, ...prev]);
+  // Add new applicant to the list
+  function handleAddApplicant(newApplicant) {
+    setApplicants([newApplicant, ...applicants]);
     setShowAddForm(false);
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors">
-      <Header
-        dark={dark}
-        onToggleDark={toggleDark}
-        onAddClick={() => setShowAddForm(true)}
-      />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header dark={dark} setDark={setDark} onAddClick={() => setShowAddForm(true)} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Stats */}
-        {!loading && !error && <StatsBar applicants={allApplicants} />}
-
-        {/* Search & Filter */}
+      <main className="max-w-5xl mx-auto px-4 py-6">
         <SearchFilter
           search={search}
-          onSearchChange={setSearch}
+          setSearch={setSearch}
           statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
+          setStatusFilter={setStatusFilter}
         />
 
-        {/* Results info */}
-        {!loading && !error && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Showing <span className="font-semibold text-slate-700 dark:text-slate-200">{filtered.length}</span> applicant{filtered.length !== 1 ? 's' : ''}
-            {data?.total ? ` of ${data.total + localApplicants.length} total` : ''}
-          </p>
+        {/* Loading state */}
+        {loading && (
+          <p className="text-center text-gray-500 dark:text-gray-400 py-10">Loading applicants...</p>
         )}
 
-        {/* Loading */}
-        {loading && <LoadingSkeleton count={6} />}
-
-        {/* Error */}
+        {/* Error state */}
         {error && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <AlertTriangle size={48} className="text-red-400 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              Failed to load applicants
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{error}</p>
-            <button
-              onClick={refetch}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
+          <p className="text-center text-red-500 py-10">Error: {error}</p>
         )}
 
-        {/* Empty state */}
+        {/* No results */}
         {!loading && !error && filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <UserX size={48} className="text-slate-300 dark:text-slate-600 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              No applicants found
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Try adjusting your search or filter criteria.
-            </p>
-          </div>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-10">No applicants found.</p>
         )}
 
-        {/* Applicant Grid */}
+        {/* Applicant grid */}
         {!loading && !error && filtered.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((applicant) => (
@@ -125,18 +88,9 @@ export default function App() {
             ))}
           </div>
         )}
-
-        {/* Pagination */}
-        {!loading && !error && data && (
-          <Pagination
-            page={page}
-            totalPages={data.totalPages}
-            onPageChange={setPage}
-          />
-        )}
       </main>
 
-      {/* Modals */}
+      {/* Detail modal */}
       {selectedApplicant && (
         <ApplicantModal
           applicant={selectedApplicant}
@@ -144,6 +98,7 @@ export default function App() {
         />
       )}
 
+      {/* Add form modal */}
       {showAddForm && (
         <AddApplicantForm
           onClose={() => setShowAddForm(false)}
